@@ -5,6 +5,7 @@ const state = {
   produtos: [],
   lancamentos: [],
   drinks: [],
+  cardapio: [],
 };
 
 function load() {
@@ -15,6 +16,7 @@ function load() {
       Object.assign(state, data);
     } catch (e) {}
   }
+  if (!Array.isArray(state.cardapio)) state.cardapio = [];
   if (state.categorias.length === 0) {
     state.categorias = [
       { id: id(), nome: 'Bebidas Alcoólicas' },
@@ -298,6 +300,25 @@ function renderDashboard() {
 const modalDrink = document.getElementById('modalDrink');
 let ingTmp = [];
 
+let drinkFotoData = '';
+document.getElementById('drinkFoto').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    drinkFotoData = ev.target.result;
+    const prev = document.getElementById('drinkFotoPrev');
+    prev.src = drinkFotoData; prev.style.display = 'block';
+    document.getElementById('btnRemoverDrinkFoto').style.display = 'inline-block';
+  };
+  r.readAsDataURL(f);
+});
+document.getElementById('btnRemoverDrinkFoto').addEventListener('click', () => {
+  drinkFotoData = '';
+  document.getElementById('drinkFoto').value = '';
+  document.getElementById('drinkFotoPrev').style.display = 'none';
+  document.getElementById('btnRemoverDrinkFoto').style.display = 'none';
+});
 document.getElementById('btnNovoDrink').addEventListener('click', () => abrirDrink());
 document.getElementById('btnAddIng').addEventListener('click', () => {
   ingTmp.push({ nome: '', qtd: 0, unidade: 'ml', valorUnit: 0 });
@@ -312,6 +333,16 @@ function abrirDrink(drink) {
   document.getElementById('drinkNome').value = drink?.nome || '';
   document.getElementById('drinkDesc').value = drink?.desc || '';
   document.getElementById('drinkPreco').value = drink?.preco ?? 0;
+  drinkFotoData = drink?.foto || '';
+  const dprev = document.getElementById('drinkFotoPrev');
+  if (drinkFotoData) {
+    dprev.src = drinkFotoData; dprev.style.display = 'block';
+    document.getElementById('btnRemoverDrinkFoto').style.display = 'inline-block';
+  } else {
+    dprev.style.display = 'none';
+    document.getElementById('btnRemoverDrinkFoto').style.display = 'none';
+  }
+  document.getElementById('drinkFoto').value = '';
   ingTmp = drink ? JSON.parse(JSON.stringify(drink.ingredientes)) : [];
   if (ingTmp.length === 0) ingTmp.push({ nome: '', qtd: 0, unidade: 'ml', valorUnit: 0 });
   renderIngredientes();
@@ -379,6 +410,7 @@ document.getElementById('formDrink').addEventListener('submit', e => {
     nome: document.getElementById('drinkNome').value.trim(),
     desc: document.getElementById('drinkDesc').value.trim(),
     preco: num(document.getElementById('drinkPreco').value),
+    foto: drinkFotoData,
     ingredientes: ingTmp.filter(i => i.nome && i.qtd > 0),
   };
   if (!data.nome) return;
@@ -411,6 +443,7 @@ function renderDrinks() {
     const card = document.createElement('div');
     card.className = 'drink-card';
     card.innerHTML = `
+      ${d.foto ? `<img src="${d.foto}" style="width:100%;height:160px;object-fit:cover;border-radius:8px;" />` : ''}
       <h3>${d.nome}</h3>
       ${d.desc ? `<div class="desc">${d.desc}</div>` : ''}
       <ul>
@@ -451,7 +484,118 @@ function renderAll() {
   renderProdutos();
   renderLancamentos();
   renderDrinks();
+  renderCardapio();
   renderDashboard();
+}
+
+// CARDÁPIO
+const modalCard = document.getElementById('modalCard');
+document.getElementById('btnNovoCard').addEventListener('click', () => abrirCard());
+document.getElementById('buscaCard').addEventListener('input', renderCardapio);
+document.getElementById('filtroCardCat').addEventListener('change', renderCardapio);
+
+let cardFotoData = '';
+document.getElementById('cardFoto').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    cardFotoData = ev.target.result;
+    const prev = document.getElementById('cardFotoPrev');
+    prev.src = cardFotoData; prev.style.display = 'block';
+    document.getElementById('btnRemoverFoto').style.display = 'inline-block';
+  };
+  r.readAsDataURL(f);
+});
+document.getElementById('btnRemoverFoto').addEventListener('click', () => {
+  cardFotoData = '';
+  document.getElementById('cardFoto').value = '';
+  document.getElementById('cardFotoPrev').style.display = 'none';
+  document.getElementById('btnRemoverFoto').style.display = 'none';
+});
+
+function abrirCard(item) {
+  document.getElementById('tituloModalCard').textContent = item ? 'Editar item' : 'Novo item do cardápio';
+  document.getElementById('cardId').value = item?.id || '';
+  document.getElementById('cardNome').value = item?.nome || '';
+  document.getElementById('cardCat').value = item?.categoria || 'cerveja';
+  document.getElementById('cardDesc').value = item?.desc || '';
+  document.getElementById('cardPreco').value = item?.preco ?? 0;
+  cardFotoData = item?.foto || '';
+  const prev = document.getElementById('cardFotoPrev');
+  if (cardFotoData) {
+    prev.src = cardFotoData; prev.style.display = 'block';
+    document.getElementById('btnRemoverFoto').style.display = 'inline-block';
+  } else {
+    prev.style.display = 'none';
+    document.getElementById('btnRemoverFoto').style.display = 'none';
+  }
+  document.getElementById('cardFoto').value = '';
+  modalCard.classList.add('open');
+}
+
+document.getElementById('formCard').addEventListener('submit', e => {
+  e.preventDefault();
+  const cid = document.getElementById('cardId').value;
+  const data = {
+    nome: document.getElementById('cardNome').value.trim(),
+    categoria: document.getElementById('cardCat').value,
+    desc: document.getElementById('cardDesc').value.trim(),
+    preco: num(document.getElementById('cardPreco').value),
+    foto: cardFotoData,
+  };
+  if (!data.nome) return;
+  if (cid) {
+    const i = state.cardapio.findIndex(x => x.id === cid);
+    state.cardapio[i] = { ...state.cardapio[i], ...data };
+  } else {
+    state.cardapio.push({ id: id(), ...data });
+  }
+  save();
+  modalCard.classList.remove('open');
+  renderAll();
+});
+
+function renderCardapio() {
+  const busca = document.getElementById('buscaCard').value.toLowerCase();
+  const filtro = document.getElementById('filtroCardCat').value;
+  const grid = document.getElementById('listaCard');
+  grid.innerHTML = '';
+  const lista = state.cardapio.filter(i =>
+    (!filtro || i.categoria === filtro) &&
+    (!busca || i.nome.toLowerCase().includes(busca))
+  );
+  if (lista.length === 0) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;background:var(--panel);border:1px solid var(--border);border-radius:12px;">Nenhum item cadastrado.</div>`;
+    return;
+  }
+  const catLabel = { cerveja: 'Cerveja', refrigerante: 'Refrigerante', petisco: 'Petisco', outros: 'Outros' };
+  lista.forEach(it => {
+    const card = document.createElement('div');
+    card.className = 'drink-card';
+    card.innerHTML = `
+      ${it.foto ? `<img src="${it.foto}" style="width:100%;height:160px;object-fit:cover;border-radius:8px;" />` : ''}
+      <h3>${it.nome}</h3>
+      <div class="desc">${catLabel[it.categoria] || ''}${it.desc ? ' — ' + it.desc : ''}</div>
+      <div class="stats"><span>Preço: <b>${brl(it.preco)}</b></span></div>
+      <div class="actions-row">
+        <button class="btn ghost small" data-edit="${it.id}">Editar</button>
+        <button class="btn danger small" data-del="${it.id}">Excluir</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+  grid.querySelectorAll('[data-edit]').forEach(b =>
+    b.addEventListener('click', () => abrirCard(state.cardapio.find(x => x.id === b.dataset.edit)))
+  );
+  grid.querySelectorAll('[data-del]').forEach(b =>
+    b.addEventListener('click', () => {
+      if (!confirm('Excluir este item?')) return;
+      state.cardapio = state.cardapio.filter(x => x.id !== b.dataset.del);
+      save();
+      renderAll();
+    })
+  );
 }
 
 load();

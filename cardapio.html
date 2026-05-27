@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Duks Bar — Cardápio</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1115; --panel: #171a21; --panel-2: #1f242d;
+    --border: #2a313d; --text: #e8ecf3; --muted: #98a2b3;
+    --primary: #f5a524; --primary-2: #e09010;
+  }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+  }
+  .hero {
+    background: linear-gradient(135deg, #1a1300 0%, var(--bg) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 40px 24px; text-align: center;
+  }
+  .hero .logo {
+    width: 70px; height: 70px; border-radius: 16px; margin: 0 auto 14px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    display: grid; place-items: center; font-weight: 800; color: #1a1300; font-size: 36px;
+  }
+  .hero h1 { font-size: 32px; margin-bottom: 6px; }
+  .hero p { color: var(--muted); font-size: 14px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+  section { margin-bottom: 40px; }
+  section h2 {
+    font-size: 22px; margin-bottom: 18px; color: var(--primary);
+    border-bottom: 1px solid var(--border); padding-bottom: 8px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 18px;
+  }
+  .item {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .item:hover { transform: translateY(-3px); border-color: var(--primary); }
+  .item img { width: 100%; height: 200px; object-fit: cover; background: var(--panel-2); }
+  .item .no-img {
+    width: 100%; height: 200px; background: var(--panel-2);
+    display: grid; place-items: center; color: var(--muted); font-size: 40px;
+  }
+  .item .body { padding: 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .item h3 { font-size: 17px; }
+  .item .desc { color: var(--muted); font-size: 13px; line-height: 1.4; flex: 1; }
+  .item .price {
+    font-size: 22px; font-weight: 800; color: var(--primary);
+    margin-top: auto;
+  }
+  .empty {
+    text-align: center; color: var(--muted); padding: 40px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+  }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 20px; }
+</style>
+</head>
+<body>
+  <div class="hero">
+    <div class="logo">D</div>
+    <h1>Duks Bar</h1>
+    <p>Cardápio</p>
+  </div>
+  <main id="root"></main>
+  <footer>Atualizado em tempo real • Duks Bar</footer>
+
+<script>
+const STORAGE_KEY = 'duks-bar-v1';
+const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+const drinks = data.drinks || [];
+const cardapio = data.cardapio || [];
+
+const brl = v => (Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+
+const sections = [
+  { key: 'drinks', title: '🍹 Drinks', items: drinks.map(d => ({...d, preco: d.preco})) },
+  { key: 'cerveja', title: '🍺 Cervejas', items: cardapio.filter(c => c.categoria==='cerveja') },
+  { key: 'refrigerante', title: '🥤 Refrigerantes', items: cardapio.filter(c => c.categoria==='refrigerante') },
+  { key: 'petisco', title: '🍟 Petiscos', items: cardapio.filter(c => c.categoria==='petisco') },
+  { key: 'outros', title: '✨ Outros', items: cardapio.filter(c => c.categoria==='outros') },
+];
+
+const root = document.getElementById('root');
+let anyContent = false;
+
+sections.forEach(s => {
+  if (s.items.length === 0) return;
+  anyContent = true;
+  const sec = document.createElement('section');
+  sec.innerHTML = `<h2>${s.title}</h2><div class="grid">${
+    s.items.map(it => `
+      <div class="item">
+        ${it.foto ? `<img src="${it.foto}" alt="${it.nome}" />` : `<div class="no-img">🍸</div>`}
+        <div class="body">
+          <h3>${it.nome}</h3>
+          ${it.desc ? `<div class="desc">${it.desc}</div>` : '<div class="desc"></div>'}
+          <div class="price">${brl(it.preco)}</div>
+        </div>
+      </div>
+    `).join('')
+  }</div>`;
+  root.appendChild(sec);
+});
+
+if (!anyContent) {
+  root.innerHTML = `<div class="empty">Cardápio em breve. Volte logo!</div>`;
+}
+</script>
+</body>
+</html>

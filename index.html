@@ -17,8 +17,10 @@
       <button class="tab" data-tab="produtos">Produtos</button>
       <button class="tab" data-tab="categorias">Categorias</button>
       <button class="tab" data-tab="drinks">Drinks</button>
+      <button class="tab" data-tab="cardapio">Cardápio</button>
       <button class="tab" data-tab="lancamentos">Lançamentos</button>
     </nav>
+    <a class="btn primary" href="cardapio.html" target="_blank" style="text-decoration:none;">Ver cardápio público ↗</a>
   </header>
 
   <main>
@@ -77,6 +79,22 @@
         <button class="btn primary" id="btnNovoDrink">+ Novo drink</button>
       </div>
       <div id="listaDrinks" class="drink-grid"></div>
+    </section>
+
+    <!-- CARDÁPIO -->
+    <section id="cardapio" class="view">
+      <div class="toolbar">
+        <input id="buscaCard" type="text" placeholder="Buscar item..." />
+        <select id="filtroCardCat">
+          <option value="">Todas as categorias</option>
+          <option value="cerveja">Cervejas</option>
+          <option value="refrigerante">Refrigerantes</option>
+          <option value="petisco">Petiscos</option>
+          <option value="outros">Outros</option>
+        </select>
+        <button class="btn primary" id="btnNovoCard">+ Novo item</button>
+      </div>
+      <div id="listaCard" class="drink-grid"></div>
     </section>
 
     <!-- LANÇAMENTOS -->
@@ -159,6 +177,34 @@
     </div>
   </div>
 
+  <!-- MODAL CARDÁPIO -->
+  <div class="modal" id="modalCard">
+    <div class="modal-content">
+      <h3 id="tituloModalCard">Novo item do cardápio</h3>
+      <form id="formCard">
+        <input type="hidden" id="cardId" />
+        <label>Nome<input type="text" id="cardNome" required placeholder="Ex: Heineken Long Neck" /></label>
+        <label>Categoria
+          <select id="cardCat">
+            <option value="cerveja">Cerveja</option>
+            <option value="refrigerante">Refrigerante</option>
+            <option value="petisco">Petisco</option>
+            <option value="outros">Outros</option>
+          </select>
+        </label>
+        <label>Descrição<input type="text" id="cardDesc" placeholder="opcional" /></label>
+        <label>Preço (R$)<input type="number" id="cardPreco" step="0.01" value="0" required /></label>
+        <label>Foto<input type="file" id="cardFoto" accept="image/*" /></label>
+        <img id="cardFotoPrev" style="max-width:100%;border-radius:10px;margin-top:8px;display:none;" />
+        <div class="actions">
+          <button type="button" class="btn danger" id="btnRemoverFoto" style="display:none;">Remover foto</button>
+          <button type="button" class="btn ghost" data-close>Cancelar</button>
+          <button type="submit" class="btn primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL DRINK -->
   <div class="modal" id="modalDrink">
     <div class="modal-content modal-lg">
@@ -167,6 +213,9 @@
         <input type="hidden" id="drinkId" />
         <label>Nome do drink<input type="text" id="drinkNome" required placeholder="Ex: Caipirinha de Limão" /></label>
         <label>Descrição / modo de preparo<input type="text" id="drinkDesc" placeholder="opcional" /></label>
+        <label>Foto<input type="file" id="drinkFoto" accept="image/*" /></label>
+        <img id="drinkFotoPrev" style="max-width:100%;border-radius:10px;margin-top:8px;display:none;" />
+        <button type="button" class="btn danger small" id="btnRemoverDrinkFoto" style="display:none;margin-bottom:10px;">Remover foto</button>
 
         <h4 class="section-title">Ficha técnica (ingredientes)</h4>
         <div class="ing-header">
