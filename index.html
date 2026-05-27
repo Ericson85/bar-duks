@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Duks Bar — Estoque</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">D</span>
+      <h1>Duks Bar <small>Controle de Estoque</small></h1>
+    </div>
+    <nav class="tabs">
+      <button class="tab active" data-tab="dashboard">Painel</button>
+      <button class="tab" data-tab="produtos">Produtos</button>
+      <button class="tab" data-tab="categorias">Categorias</button>
+      <button class="tab" data-tab="drinks">Drinks</button>
+      <button class="tab" data-tab="lancamentos">Lançamentos</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="view active">
+      <div class="cards">
+        <div class="card"><span>Produtos</span><strong id="kpiProdutos">0</strong></div>
+        <div class="card"><span>Itens em estoque</span><strong id="kpiItens">0</strong></div>
+        <div class="card"><span>Valor de custo</span><strong id="kpiCusto">R$ 0,00</strong></div>
+        <div class="card"><span>Valor de venda</span><strong id="kpiVenda">R$ 0,00</strong></div>
+        <div class="card highlight"><span>Lucro previsto</span><strong id="kpiLucro">R$ 0,00</strong></div>
+      </div>
+
+      <h2>Estoque baixo</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Produto</th><th>Categoria</th><th>Qtd</th><th>Mínimo</th></tr></thead>
+          <tbody id="tblBaixo"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PRODUTOS -->
+    <section id="produtos" class="view">
+      <div class="toolbar">
+        <input id="buscaProduto" type="text" placeholder="Buscar produto..." />
+        <select id="filtroCategoria"><option value="">Todas as categorias</option></select>
+        <button class="btn primary" id="btnNovoProduto">+ Novo produto</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th><th>Categoria</th><th>Unidade</th>
+              <th>Qtd</th><th>Custo</th><th>Venda</th><th>Lucro</th><th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tblProdutos"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CATEGORIAS -->
+    <section id="categorias" class="view">
+      <div class="toolbar">
+        <input id="novaCategoria" type="text" placeholder="Nome da nova categoria" />
+        <button class="btn primary" id="btnAddCategoria">+ Adicionar</button>
+      </div>
+      <div class="chips" id="listaCategorias"></div>
+    </section>
+
+    <!-- DRINKS -->
+    <section id="drinks" class="view">
+      <div class="toolbar">
+        <input id="buscaDrink" type="text" placeholder="Buscar drink..." />
+        <button class="btn primary" id="btnNovoDrink">+ Novo drink</button>
+      </div>
+      <div id="listaDrinks" class="drink-grid"></div>
+    </section>
+
+    <!-- LANÇAMENTOS -->
+    <section id="lancamentos" class="view">
+      <div class="toolbar">
+        <button class="btn primary" id="btnNovoLanc">+ Novo lançamento</button>
+        <select id="filtroTipo">
+          <option value="">Todos os tipos</option>
+          <option value="entrada">Entradas</option>
+          <option value="saida">Saídas</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Data</th><th>Tipo</th><th>Produto</th><th>Qtd</th><th>Valor unit.</th><th>Total</th><th>Obs.</th><th></th></tr>
+          </thead>
+          <tbody id="tblLanc"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL PRODUTO -->
+  <div class="modal" id="modalProduto">
+    <div class="modal-content">
+      <h3 id="tituloModalProd">Novo produto</h3>
+      <form id="formProduto">
+        <input type="hidden" id="prodId" />
+        <label>Nome<input type="text" id="prodNome" required /></label>
+        <label>Categoria
+          <select id="prodCategoria" required></select>
+        </label>
+        <div class="row">
+          <label>Unidade
+            <select id="prodUnidade">
+              <option>un</option><option>ml</option><option>L</option>
+              <option>g</option><option>kg</option><option>dose</option><option>cx</option>
+            </select>
+          </label>
+          <label>Estoque mínimo<input type="number" id="prodMinimo" step="0.01" value="0" /></label>
+        </div>
+        <div class="row">
+          <label>Quantidade inicial<input type="number" id="prodQtd" step="0.01" value="0" /></label>
+        </div>
+        <div class="row">
+          <label>Preço de custo (R$)<input type="number" id="prodCusto" step="0.01" value="0" /></label>
+          <label>Preço de venda (R$)<input type="number" id="prodVenda" step="0.01" value="0" /></label>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn ghost" data-close>Cancelar</button>
+          <button type="submit" class="btn primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL LANÇAMENTO -->
+  <div class="modal" id="modalLanc">
+    <div class="modal-content">
+      <h3>Novo lançamento</h3>
+      <form id="formLanc">
+        <label>Tipo
+          <select id="lancTipo">
+            <option value="entrada">Entrada (compra/reposição)</option>
+            <option value="saida">Saída (venda/consumo)</option>
+          </select>
+        </label>
+        <label>Produto<select id="lancProduto" required></select></label>
+        <div class="row">
+          <label>Quantidade<input type="number" id="lancQtd" step="0.01" required /></label>
+          <label>Valor unitário (R$)<input type="number" id="lancValor" step="0.01" /></label>
+        </div>
+        <label>Observação<input type="text" id="lancObs" placeholder="opcional" /></label>
+        <div class="actions">
+          <button type="button" class="btn ghost" data-close>Cancelar</button>
+          <button type="submit" class="btn primary">Lançar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL DRINK -->
+  <div class="modal" id="modalDrink">
+    <div class="modal-content modal-lg">
+      <h3 id="tituloModalDrink">Novo drink</h3>
+      <form id="formDrink">
+        <input type="hidden" id="drinkId" />
+        <label>Nome do drink<input type="text" id="drinkNome" required placeholder="Ex: Caipirinha de Limão" /></label>
+        <label>Descrição / modo de preparo<input type="text" id="drinkDesc" placeholder="opcional" /></label>
+
+        <h4 class="section-title">Ficha técnica (ingredientes)</h4>
+        <div class="ing-header">
+          <span>Ingrediente</span>
+          <span>Qtd</span>
+          <span>Unid.</span>
+          <span>R$/unid.</span>
+          <span>Custo</span>
+          <span></span>
+        </div>
+        <div id="ingredientes"></div>
+        <div class="ing-actions">
+          <button type="button" class="btn ghost small" id="btnAddIng">+ Adicionar ingrediente</button>
+        </div>
+
+        <div class="ficha-summary">
+          <div><span>Custo total</span><strong id="drinkCustoTotal">R$ 0,00</strong></div>
+          <div>
+            <span>Valor do drink</span>
+            <input type="number" id="drinkPreco" step="0.01" value="0" />
+          </div>
+          <div class="highlight"><span>Lucro</span><strong id="drinkLucro">R$ 0,00</strong></div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn ghost" data-close>Cancelar</button>
+          <button type="submit" class="btn primary">Salvar drink</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
